@@ -1,3 +1,4 @@
+import datetime
 from abc import ABC
 from dataclasses import dataclass
 from enum import Enum
@@ -32,7 +33,7 @@ category_from_description: Dict[str, Category] = {
 class Transaction:
     amount: Any
     business: str
-    date: Any
+    date: datetime.datetime
 
     @property
     def category(self) -> Category:  # todo: better to perform once only
@@ -61,7 +62,7 @@ class Transactions(ABC):
 
 class TransactionWorkbookWriter:
 
-    def __init__(self, outfile: str) -> None:
+    def __init__(self, outfile: str, filters: dict) -> None:
         self._wb = Workbook()
         self._sheet = self._wb.active
         header_row = "סכום החיוב", "בית העסק", "תאריך עסקה", "טיב"
@@ -71,6 +72,7 @@ class TransactionWorkbookWriter:
         for column, width in column_widths.items():
             self._sheet.column_dimensions[column].width = width
         self._outfile = outfile
+        self._filters = filters
 
     def __enter__(self) -> Any:
         return self
@@ -80,10 +82,14 @@ class TransactionWorkbookWriter:
 
     def process(self, transactions: Iterator[Transaction]) -> None:
         for transaction in transactions:
-            self._sheet.append(self._convert(transaction))  # todo convert to row
+            if self._relevant(transaction):
+                self._sheet.append(self._convert(transaction))
 
     def _convert(self, transaction: Transaction) -> Tuple:
         return transaction.amount, transaction.business, transaction.date, transaction.category.value
+
+    def _relevant(self, transaction: Transaction) -> True:
+        return self._filters and "month" in self._filters and transaction.date.month == self._filters["month"]
 
 
 class TransactionsMerger:
@@ -138,8 +144,9 @@ def main() -> None:
     bankfile = BankTransactions("/tmp/excel/ca.xlsx")
     creditfile = CreditTransactions("/tmp/excel/ashrai.xlsx")
     outfile = "/tmp/excel/merged.xlsx"
-    merger = TransactionsMerger([bankfile])  # todo , creditfile])
-    merger.merge(TransactionWorkbookWriter(outfile=outfile))
+    filters = {"month": 6}  # todo
+    merger = TransactionsMerger(reports=[bankfile])  # todo , creditfile])
+    merger.merge(TransactionWorkbookWriter(outfile=outfile, filters=filters))
 
 
 if __name__ == "__main__":
