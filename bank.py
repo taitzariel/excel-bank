@@ -1,8 +1,8 @@
 import datetime
-from abc import ABC
+from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from enum import Enum
-from typing import Any, Collection, Iterator, Tuple, Dict, Set
+from typing import Any, Collection, Iterator, Tuple, Dict, Set, Optional
 from openpyxl import Workbook, load_workbook
 
 
@@ -83,18 +83,27 @@ class Transaction:
 
 class Transactions(ABC):
 
-    def transaction_generator(self):
-        # first_data_row = get_first_data_row()
-        # find row where data starts
-        # while row is non-empty:
-        #  if row irrelevant:
-        #     skip
-        #  convert row to Transaction and yield
-        pass
+    def __init__(self, filename) -> None:
+        self._workbook = load_workbook(filename=filename, read_only=True)
+        self._sheet = self._workbook.active  # todo: don't keep unnecessary fields
+        self._row_gen = self._sheet.rows
+        while self.is_header_row(next(self._row_gen)):
+            pass
 
-    # @abstractmethod
-    # def get_first_data_row(self) -> int:
-    #     return -3
+    @abstractmethod
+    def is_header_row(self, row) -> bool:
+        return True
+
+    def transaction_generator(self):
+        for row in self._row_gen:
+            if not row[0].value:
+                return
+            yield self._convert(row)
+
+    @abstractmethod
+    def _convert(self, row) -> Optional[Transaction]:  # todo
+        return None
+
 
 
 class TransactionWorkbookWriter:
@@ -147,38 +156,24 @@ class TransactionsMerger:
 class BankTransactions(Transactions):
 
     def __init__(self, filename) -> None:
-        self._workbook = load_workbook(filename=filename, read_only=True)
-        self._sheet = self._workbook.active  # todo: don't keep unnecessary fields
-        self._row_gen = self._sheet.rows
-        while next(self._row_gen)[0].value != "תאריך":
-            pass
+        super().__init__(filename)
 
-    def transaction_generator(self):
-        # find row where data starts - done
-        for row in self._row_gen:
-            if not row[0].value:
-                return
-            if self._irrelevant_row(row):
-                continue
-            yield self._convert(row)
-        # while row is non-empty:
-        #  if row irrelevant:
-        #     skip
-        #  convert row to Transaction and yield
+    def is_header_row(self, row) -> bool:
+        return row[0].value != "תאריך"
 
-    def _irrelevant_row(self, row) -> bool:  # todo: abstract
-        return False
-
-    def _convert(self, row):
+    def _convert(self, row) -> Transaction:
         return Transaction(amount=-row[3].value, business=row[2].value, date=row[0].value)
 
 
 class CreditTransactions(Transactions):
     def __init__(self, filename) -> None:
-        self._filename = filename
+        super().__init__(filename)
 
-    def transaction_generator(self):
-        pass
+    def is_header_row(self, row) -> bool:
+        return row[0].value != "כרטיס"
+
+    def _convert(self, row) -> Transaction:
+        return Transaction(amount=-row[8].value, business=row[1].value, date=datetime.datetime.strptime(row[7].value, "%d/%m/%Y"))
 
 
 def main() -> None:
@@ -186,7 +181,7 @@ def main() -> None:
     creditfile = CreditTransactions("/tmp/excel/ashrai.xlsx")
     outfile = "/tmp/excel/merged.xlsx"
     filters = {"month": 6}  # todo
-    merger = TransactionsMerger(reports=[bankfile])  # todo , creditfile])
+    merger = TransactionsMerger(reports=[bankfile, creditfile])
     merger.merge(TransactionWorkbookWriter(outfile=outfile, filters=filters))
 
 
