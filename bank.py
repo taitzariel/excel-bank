@@ -2,7 +2,7 @@ import datetime
 from abc import ABC
 from dataclasses import dataclass
 from enum import Enum
-from typing import Any, Collection, Iterator, Tuple, Dict
+from typing import Any, Collection, Iterator, Tuple, Dict, Set
 from openpyxl import Workbook, load_workbook
 
 
@@ -22,11 +22,49 @@ class Category(Enum):
     other = "אחר"
 
 
-category_from_description: Dict[str, Category] = {
-    "משכנתא": Category.mortgage,
-    "מס" : Category.tax,
-
+descriptions_by_category: Dict[Category, Set[str]] = {
+    Category.mortgage: {
+        "משכנתא",
+    },
+    Category.tax: {
+        "מס",
+    },
+    Category.running_expenses: {
+        "ועד",
+        "אינטרנט",
+    },
+    Category.savings: {
+        "חסכון",
+    },
+    Category.donation: {
+        "פעמונים",
+        "מוסדות חב\"ד",
+        "מכון מאיר",
+        "עטרת ירושלים",
+    },
+    Category.insurance: {
+        "מכבי",
+        "שירותי ברי",
+    },
+    Category.education: {
+        "אמונה",
+    },
+    Category.atm: {
+        "כספומט"
+    },
+    Category.mentoring: {
+        "שר שלום",
+    },
 }
+
+category_from_description: Dict[str, Category] = {}
+
+# todo: one-liner?
+# map(lambda cat, keywords: ((yield cat, keyword) for keyword in keywords), descriptions_by_category.items())
+for cat, keywords in descriptions_by_category.items():
+    for keyword in keywords:
+        category_from_description[keyword] = cat
+# category_from_description = {keyword: cat for cat, keywords in descriptions_by_category.items() }
 
 
 @dataclass
@@ -40,8 +78,7 @@ class Transaction:
         for keyword, category in category_from_description.items():
             if keyword in self.business:
                 return category
-            else:
-                return Category.other
+        return Category.other
 
 
 class Transactions(ABC):
@@ -89,7 +126,11 @@ class TransactionWorkbookWriter:
         return transaction.amount, transaction.business, transaction.date, transaction.category.value
 
     def _relevant(self, transaction: Transaction) -> True:
-        return self._filters and "month" in self._filters and transaction.date.month == self._filters["month"]
+        return (
+                self._filters and "month" in self._filters and transaction.date.month == self._filters["month"]
+                and
+                "כרטיס ויזה" not in transaction.business
+        )
 
 
 class TransactionsMerger:
