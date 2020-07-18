@@ -152,6 +152,7 @@ class TransactionWorkbookWriter:
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
+        self._sheet.freeze_panes = self._sheet["a2"]
         self._wb.save(self._outfile)
 
     def process(self, transactions: Iterator[Transaction]) -> None:
