@@ -104,6 +104,11 @@ class Transaction:
                 return category
         return Category.other
 
+    details: str
+    card: str
+    notes: str
+    transaction_sum: Any
+
 
 class Transactions(ABC):
 
@@ -134,10 +139,10 @@ class TransactionWorkbookWriter:
     def __init__(self, outfile: str, filters: dict) -> None:
         self._wb = Workbook()
         self._sheet = self._wb.active
-        header_row = "סכום החיוב", "בית עסק", "תאריך עסקה", "טיב"
+        header_row = "סכום החיוב", "בית עסק", "תאריך עסקה", "טיב", "פירוט", "כרטיס", "הערות", "סכום העסקה"
         self._sheet.append(header_row)  # todo: ensure header row matches data rows
         self._sheet.sheet_view.rightToLeft = True
-        column_widths = {'a': 13, 'b': 33, 'c': 20}  # todo
+        column_widths = {'a': 10, 'b': 30, 'c': 20, 'd': 13, 'e': 20, 'f': 10, 'g': 20, 'h': 15}  # todo
         for column, width in column_widths.items():
             self._sheet.column_dimensions[column].width = width
         self._outfile = outfile
@@ -156,7 +161,16 @@ class TransactionWorkbookWriter:
 
     @staticmethod
     def _convert(transaction: Transaction) -> Tuple:
-        return transaction.amount, transaction.business, transaction.transaction_date, transaction.category.value
+        return (
+            transaction.amount,
+            transaction.business,
+            transaction.transaction_date,
+            transaction.category.value,
+            transaction.details,
+            transaction.card,
+            transaction.notes,
+            transaction.transaction_sum,
+        )
 
     def _relevant(self, transaction: Transaction) -> True:
         return (
@@ -183,7 +197,14 @@ class BankTransactions(Transactions):
 
     def _convert(self, row) -> Transaction:
         return Transaction(
-            amount=-row[3].value, business=row[2].value, transaction_date=row[0].value, charge_date=row[1].value,
+            amount=-row[3].value,
+            business=row[2].value,
+            transaction_date=row[0].value,
+            charge_date=row[1].value,
+            details="",
+            card="",
+            notes="",
+            transaction_sum=None,
         )
 
 
@@ -193,8 +214,14 @@ class CreditTransactions(Transactions):
 
     def _convert(self, row) -> Transaction:
         return Transaction(
-            amount=-row[8].value, business=row[1].value, charge_date=datetime.datetime.strptime(row[7].value, "%d/%m/%Y"),
+            amount=-row[8].value,
+            business=row[1].value,
+            charge_date=datetime.datetime.strptime(row[7].value, "%d/%m/%Y"),
             transaction_date=datetime.datetime.strptime(row[2].value, "%d/%m/%Y"),
+            details=row[6].value,
+            card=row[0].value,
+            notes="",
+            transaction_sum=row[3].value,
         )
 
 
