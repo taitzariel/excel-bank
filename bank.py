@@ -27,11 +27,15 @@ descriptions_by_category: Dict[Category, Set[str]] = {
         "משכנתא",
     },
     Category.tax: {
-        "מס",
+        "מסים",
     },
     Category.running_expenses: {
         "ועד",
         "אינטרנט",
+        "חברת החשמל",
+        "019",
+        "פלאפון",
+        "בזק",
     },
     Category.savings: {
         "חסכון",
@@ -40,11 +44,19 @@ descriptions_by_category: Dict[Category, Set[str]] = {
         "פעמונים",
         "מוסדות חב\"ד",
         "מכון מאיר",
-        "עטרת ירושלים",
+        "עטרת",
+        "מה יפו פעמי",
+        "התורה והארץ",
+        "גרעין יפו",
+        "בית דוד בית שמש",
+        "המרכז העולמי לחסד",
     },
     Category.insurance: {
         "מכבי",
         "שירותי ברי",
+        "ביטוח",
+        "פניקס",
+        "מגדל",
     },
     Category.education: {
         "אמונה",
@@ -55,6 +67,17 @@ descriptions_by_category: Dict[Category, Set[str]] = {
     Category.mentoring: {
         "שר שלום",
     },
+    Category.fuel: {
+        "פנגו",
+        "פז",
+        "כלל חובה",
+    },
+    Category.food:{
+        "מכולת",
+        "יינות ביתן",
+        "שופרסל",
+        "רמי לוי",
+    }
 }
 
 category_from_description: Dict[str, Category] = {}
@@ -75,8 +98,8 @@ class Transaction:
 
     @property
     def category(self) -> Category:  # todo: better to perform once only
-        for keyword, category in category_from_description.items():
-            if keyword in self.business:
+        for kw, category in category_from_description.items():
+            if kw in self.business:
                 return category
         return Category.other
 
@@ -105,7 +128,6 @@ class Transactions(ABC):
         return None
 
 
-
 class TransactionWorkbookWriter:
 
     def __init__(self, outfile: str, filters: dict) -> None:
@@ -131,7 +153,8 @@ class TransactionWorkbookWriter:
             if self._relevant(transaction):
                 self._sheet.append(self._convert(transaction))
 
-    def _convert(self, transaction: Transaction) -> Tuple:
+    @staticmethod
+    def _convert(transaction: Transaction) -> Tuple:
         return transaction.amount, transaction.business, transaction.date, transaction.category.value
 
     def _relevant(self, transaction: Transaction) -> True:
@@ -154,10 +177,6 @@ class TransactionsMerger:
 
 
 class BankTransactions(Transactions):
-
-    def __init__(self, filename) -> None:
-        super().__init__(filename)
-
     def is_header_row(self, row) -> bool:
         return row[0].value != "תאריך"
 
@@ -166,14 +185,13 @@ class BankTransactions(Transactions):
 
 
 class CreditTransactions(Transactions):
-    def __init__(self, filename) -> None:
-        super().__init__(filename)
-
     def is_header_row(self, row) -> bool:
         return row[0].value != "כרטיס"
 
     def _convert(self, row) -> Transaction:
-        return Transaction(amount=-row[8].value, business=row[1].value, date=datetime.datetime.strptime(row[7].value, "%d/%m/%Y"))
+        return Transaction(
+            amount=-row[8].value, business=row[1].value, date=datetime.datetime.strptime(row[7].value, "%d/%m/%Y")
+        )
 
 
 def main() -> None:
