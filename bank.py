@@ -8,18 +8,18 @@ from openpyxl.styles import numbers
 
 
 class Category(Enum):
-    tax = "מס"
-    education = "חינוך"
-    food = "אוכל"
-    atm = "כספומט"
-    running_expenses = "שוטף"
-    fuel = "דלק"
-    insurance = "ביטוח"
-    transport = "תחבורה"
-    savings = "חסכון"
     mortgage = "משכנתא"
-    donation = "תרומה"
+    food = "אוכל"
+    education = "חינוך"
+    running_expenses = "שוטף"
     mentoring = "הדרכה"
+    donation = "תרומה"
+    tax = "מס"
+    insurance = "ביטוח"
+    atm = "כספומט"
+    fuel = "דלק"
+    savings = "חסכון"
+    transport = "תחבורה"
     other = "אחר"
     income = "הכנסות"
 
@@ -74,7 +74,7 @@ descriptions_by_category: Dict[Category, Set[str]] = {
         "פז",
         "כלל חובה",
     },
-    Category.food:{
+    Category.food: {
         "מכולת",
         "יינות ביתן",
         "שופרסל",
@@ -155,10 +155,6 @@ class TransactionWorkbookWriter:
             self.position = position
             self.width = width
             self.description = description
-
-        @staticmethod  # todo : needed?
-        def sorted_by_position():
-            return sorted(TransactionWorkbookWriter.Column, key=lambda col: col.position)
 
         @staticmethod
         def by_position():
