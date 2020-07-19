@@ -136,14 +136,39 @@ class Transactions(ABC):
 
 class TransactionWorkbookWriter:
 
+    class Column(Enum):
+        charge = 'a', 10, "סכום החיוב"
+        business = 'b', 30, "בית עסק"
+        transaction_date = 'c', 20, "תאריך עסקה"
+        category = 'd', 13, "טיב"
+        details = 'e', 20, "פירוט"
+        card = 'f', 10, "כרטיס"
+        notes = 'g', 20, "הערות"
+        transaction_sum = 'h', 15, "סכום העסקה"
+
+        def __init__(self, position: str, width: int, description: str) -> None:
+            self.position = position
+            self.width = width
+            self.description = description
+
+        @staticmethod  # todo : needed?
+        def sorted_by_position():
+            return sorted(TransactionWorkbookWriter.Column, key=lambda col: col.position)
+
+        @staticmethod
+        def by_position():
+            return {col.position: col.description for col in TransactionWorkbookWriter.Column}
+
+        @staticmethod
+        def width_per_column():
+            return {col.position: col.width for col in TransactionWorkbookWriter.Column}
+
     def __init__(self, outfile: str, filters: dict) -> None:
         self._wb = Workbook()
         self._sheet = self._wb.active
-        header_row = "סכום החיוב", "בית עסק", "תאריך עסקה", "טיב", "פירוט", "כרטיס", "הערות", "סכום העסקה"
-        self._sheet.append(header_row)  # todo: ensure header row matches data rows
+        self._sheet.append(TransactionWorkbookWriter.Column.by_position())  # todo: ensure header row matches data rows
         self._sheet.sheet_view.rightToLeft = True
-        column_widths = {'a': 10, 'b': 30, 'c': 20, 'd': 13, 'e': 20, 'f': 10, 'g': 20, 'h': 15}  # todo
-        for column, width in column_widths.items():
+        for column, width in TransactionWorkbookWriter.Column.width_per_column().items():
             self._sheet.column_dimensions[column].width = width
         self._outfile = outfile
         self._filters = filters
@@ -153,10 +178,11 @@ class TransactionWorkbookWriter:
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         self._sheet.freeze_panes = self._sheet["a2"]
-        self.add_sort_dropdown()
+        self._add_sort_dropdown()
+        self._add_summary()
         self._wb.save(self._outfile)
 
-    def add_sort_dropdown(self):
+    def _add_sort_dropdown(self) -> None:
         last_col = chr(ord('a') - 1 + self._sheet.max_column)
         last_row = self._sheet.max_row
         self._sheet.auto_filter.ref = f"a1:{last_col}{last_row}"
@@ -186,6 +212,20 @@ class TransactionWorkbookWriter:
                 and
                 "כרטיס ויזה" not in transaction.business
         )
+
+    def _add_summary(self) -> None:
+        last_data_row = self._sheet.max_row
+        for _ in range(3):
+            self._sheet.append(())
+        charge_pos = TransactionWorkbookWriter.Column.charge.position
+        cat_pos = TransactionWorkbookWriter.Column.category.position
+        charge_range = f"{charge_pos}2:{charge_pos}{last_data_row}"
+        category_range = f"{cat_pos}2:{cat_pos}{last_data_row}"
+        for category in Category:
+            self._sheet.append((
+                category.value,
+                f"=SUMIFS({charge_range}, {charge_range}, \">=0\", {category_range}, \"{category.value}\")"
+            ))
 
 
 class TransactionsMerger:
