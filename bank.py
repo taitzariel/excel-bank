@@ -153,7 +153,14 @@ class TransactionWorkbookWriter:
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         self._sheet.freeze_panes = self._sheet["a2"]
+        self.add_sort_dropdown()
         self._wb.save(self._outfile)
+
+    def add_sort_dropdown(self):
+        last_col = chr(ord('a') - 1 + self._sheet.max_column)
+        last_row = self._sheet.max_row
+        self._sheet.auto_filter.ref = f"a1:{last_col}{last_row}"
+        self._sheet.auto_filter.add_sort_condition(f"a2:a{last_row}")
 
     def process(self, transactions: Iterator[Transaction]) -> None:
         for transaction in transactions:
@@ -215,7 +222,7 @@ class CreditTransactions(Transactions):
 
     def _convert(self, row) -> Transaction:
         return Transaction(
-            amount=-row[8].value,
+            amount=row[8].value,
             business=row[1].value,
             charge_date=datetime.datetime.strptime(row[7].value, "%d/%m/%Y"),
             transaction_date=datetime.datetime.strptime(row[2].value, "%d/%m/%Y"),
