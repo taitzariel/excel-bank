@@ -20,6 +20,7 @@ class Category(Enum):
     donation = "תרומה"
     mentoring = "הדרכה"
     other = "אחר"
+    income = "הכנסות"
 
 
 descriptions_by_category: Dict[Category, Set[str]] = {
@@ -102,7 +103,10 @@ class Transaction:
         for kw, category in category_from_description.items():
             if kw in self.business:
                 return category
-        return Category.other
+        if self.amount < 0:
+            return Category.income
+        else:
+            return Category.other
 
     details: str
     card: str
@@ -224,7 +228,7 @@ class TransactionWorkbookWriter:
         for category in Category:
             self._sheet.append((
                 category.value,
-                f"=SUMIFS({charge_range}, {charge_range}, \">=0\", {category_range}, \"{category.value}\")"
+                f"=SUMIFS({charge_range}, {category_range}, \"{category.value}\")"
             ))
 
 
