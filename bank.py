@@ -4,6 +4,7 @@ from dataclasses import dataclass
 from enum import Enum
 from typing import Any, Collection, Iterator, Tuple, Dict, Set, Optional
 from openpyxl import Workbook, load_workbook
+from openpyxl.styles import numbers
 
 
 class Category(Enum):
@@ -196,6 +197,10 @@ class TransactionWorkbookWriter:
         for transaction in transactions:
             if self._relevant(transaction):
                 self._sheet.append(self._convert(transaction))
+                self._set_number_format(TransactionWorkbookWriter.Column.charge.position)
+
+    def _set_number_format(self, position: str):
+        self._sheet[f"{position}{self._sheet.max_row}"].number_format = numbers.FORMAT_NUMBER
 
     @staticmethod
     def _convert(transaction: Transaction) -> Tuple:
@@ -230,6 +235,7 @@ class TransactionWorkbookWriter:
                 category.value,
                 f"=SUMIFS({charge_range}, {category_range}, \"{category.value}\")"
             ))
+            self._set_number_format(position='b')
 
 
 class TransactionsMerger:
