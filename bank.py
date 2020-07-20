@@ -243,14 +243,10 @@ class TransactionWorkbookWriter:
                 formula=f"=SUMIFS({charge_range}, {category_range}, \"{cat.value}\")",
             )
 
-        add_summary_row(
-            description="category",
-            formula="amount",
-        )
         for category in Category:
             if category is not Category.income:
                 add_category(category)
-        self._add_category_chart(start_row=last_data_row + gap + 2, end_row=self._sheet.max_row, start_col=2, end_col=2)
+        self._add_category_chart(start_row=last_data_row + gap + 1, end_row=self._sheet.max_row, start_col=2, end_col=2)
         self._sheet.append(())
         add_summary_row(
             description="הוצאות",
@@ -258,7 +254,7 @@ class TransactionWorkbookWriter:
         )
         add_category(Category.income)
         add_summary_row(
-            description="סך הוצעות",
+            description="סך הוצאות",
             formula=f"=SUM({charge_range})",
         )
 
