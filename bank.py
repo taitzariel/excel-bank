@@ -84,7 +84,7 @@ descriptions_by_category: Dict[Category, Set[str]] = {
     },
 }
 
-category_from_description: Dict[str, Category] = {
+category_by_description: Dict[str, Category] = {
     keyword: cat for cat, keywords in descriptions_by_category.items() for keyword in keywords
 }
 
@@ -104,7 +104,7 @@ class Transaction:
         self.category = self._compute_category()
 
     def _compute_category(self) -> Category:
-        for kw, category in category_from_description.items():
+        for kw, category in category_by_description.items():
             if kw in self.business:
                 return category
         if self.amount < 0:
@@ -113,16 +113,16 @@ class Transaction:
             return Category.other
 
 
-class Transactions(ABC):
+class TransactionProducer(ABC):
 
     def __init__(self, filename: str) -> None:
         workbook = load_workbook(filename=filename, read_only=True)
         self._row_gen = workbook.active.rows
-        while self.is_header_row(next(self._row_gen)):
+        while self._is_header_row(next(self._row_gen)):
             pass
 
     @abstractmethod
-    def is_header_row(self, row) -> bool:
+    def _is_header_row(self, row) -> bool:
         """this method should return whether we have reached the row before the first data row"""
 
     def transaction_generator(self) -> Iterator[Transaction]:
@@ -137,7 +137,6 @@ class Transactions(ABC):
 
 
 class TransactionWorkbookWriter:
-
     class Column(Enum):
         charge = 'a', 10, "סכום החיוב"
         business = 'b', 30, "בית עסק"
@@ -261,7 +260,7 @@ class TransactionWorkbookWriter:
 
 class TransactionsMerger:
 
-    def __init__(self, reports: Collection[Transactions]) -> None:
+    def __init__(self, reports: Collection[TransactionProducer]) -> None:
         self._reports = reports
 
     def merge(self, transactions_processor: Any) -> None:
@@ -270,8 +269,8 @@ class TransactionsMerger:
                 processor.process(report.transaction_generator())
 
 
-class BankTransactions(Transactions):
-    def is_header_row(self, row) -> bool:
+class BankTransactions(TransactionProducer):
+    def _is_header_row(self, row) -> bool:
         return row[0].value != "תאריך"
 
     def _convert(self, row) -> Transaction:
@@ -287,8 +286,8 @@ class BankTransactions(Transactions):
         )
 
 
-class CreditTransactions(Transactions):
-    def is_header_row(self, row) -> bool:
+class CreditTransactions(TransactionProducer):
+    def _is_header_row(self, row) -> bool:
         return row[0].value != "כרטיס"
 
     def _convert(self, row) -> Transaction:
@@ -308,7 +307,7 @@ def main() -> None:
     bankfile = BankTransactions("/tmp/excel/ca.xlsx")
     creditfile = CreditTransactions("/tmp/excel/ashrai.xlsx")
     outfile = "/tmp/excel/merged.xlsx"
-    filters = {"month": 6}  # todo
+    filters = {"month": 6}
     merger = TransactionsMerger(reports=[bankfile, creditfile])
     merger.merge(TransactionWorkbookWriter(outfile=outfile, filters=filters))
 
