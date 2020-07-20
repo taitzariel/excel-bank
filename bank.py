@@ -2,7 +2,8 @@ import datetime
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from enum import Enum
-from typing import Any, Collection, Iterator, Tuple, Dict, Set
+from functools import partial
+from typing import Any, Collection, Iterator, Tuple, Dict, Set, Callable
 
 from openpyxl import Workbook, load_workbook
 from openpyxl.chart import PieChart, Reference
@@ -185,7 +186,7 @@ class TransactionWorkbookWriter:
         self._sheet.auto_filter.ref = f"a1:{last_col}{last_row}"
         self._sheet.auto_filter.add_sort_condition(f"a2:a{last_row}")
 
-    def process(self, transactions: Iterator[Transaction]) -> None:
+    def accept(self, transactions: Iterator[Transaction]) -> None:
         for transaction in transactions:
             if self._relevant(transaction):
                 self._sheet.append(self._convert(transaction))
@@ -214,40 +215,49 @@ class TransactionWorkbookWriter:
                 "כרטיס ויזה" not in transaction.business
         )
 
+    def _add_summary_row(self, description: str, formula: str) -> None:
+        self._sheet.append((description, formula))
+        self._set_number_format(position='b')
+
+    def _add_category(self, cat: Category, charge_range: str, category_range: str) -> None:
+        self._add_summary_row(
+            description=cat.value,
+            formula=f"=SUMIFS({charge_range}, {category_range}, \"{cat.value}\")",
+        )
+
     def _add_summary(self) -> None:
         last_data_row = self._sheet.max_row
-        gap = 3
-        for _ in range(gap):
-            self._sheet.append(())
         charge_pos = TransactionWorkbookWriter.Column.charge.position
         cat_pos = TransactionWorkbookWriter.Column.category.position
         charge_range = f"{charge_pos}2:{charge_pos}{last_data_row}"
         category_range = f"{cat_pos}2:{cat_pos}{last_data_row}"
+        add_category = partial(self._add_category, charge_range=charge_range, category_range=category_range)
+        gap = 3
+        self._add_rows(gap)
+        self._add_category_summary(add_category, start_row=last_data_row + gap + 1)
+        self._add_rows(1)
+        self._add_totals_summary(add_category, charge_range)
 
-        def add_summary_row(description: str, formula: str) -> None:
-            self._sheet.append((description, formula))
-            self._set_number_format(position='b')
-
-        def add_category(cat: Category) -> None:
-            add_summary_row(
-                description=cat.value,
-                formula=f"=SUMIFS({charge_range}, {category_range}, \"{cat.value}\")",
-            )
-
-        for category in Category:
-            if category is not Category.income:
-                add_category(category)
-        self._add_category_chart(start_row=last_data_row + gap + 1, end_row=self._sheet.max_row, start_col=2, end_col=2)
-        self._sheet.append(())
-        add_summary_row(
+    def _add_totals_summary(self, add_category: Callable, charge_range: str) -> None:
+        self._add_summary_row(
             description="הוצאות",
             formula=f"=SUMIFS({charge_range}, {charge_range}, \">0\")",
         )
         add_category(Category.income)
-        add_summary_row(
+        self._add_summary_row(
             description="סך הוצאות",
             formula=f"=SUM({charge_range})",
         )
+
+    def _add_category_summary(self, add_category: Callable, start_row: int) -> None:
+        for category in Category:
+            if category is not Category.income:
+                add_category(category)
+        self._add_category_chart(start_row=start_row, end_row=self._sheet.max_row, start_col=2, end_col=2)
+
+    def _add_rows(self, rows: int) -> None:
+        for _ in range(rows):
+            self._sheet.append(())
 
     def _add_category_chart(self, start_row: int, end_row: int, start_col: int, end_col: int) -> None:
         chart = PieChart()
@@ -266,7 +276,7 @@ class TransactionsMerger:
     def merge(self, transactions_processor: Any) -> None:
         with transactions_processor as processor:
             for report in self._reports:
-                processor.process(report.transaction_generator())
+                processor.accept(report.transaction_generator())
 
 
 class BankTransactions(TransactionProducer):
