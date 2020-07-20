@@ -100,7 +100,7 @@ class Transaction:
     notes: str
     transaction_sum: Any
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         self.category = self._compute_category()
 
     def _compute_category(self) -> Category:
@@ -125,7 +125,7 @@ class Transactions(ABC):
     def is_header_row(self, row) -> bool:
         """this method should return whether we have reached the row before the first data row"""
 
-    def transaction_generator(self):
+    def transaction_generator(self) -> Iterator[Transaction]:
         for row in self._row_gen:
             if not row[0].value:
                 return
@@ -174,7 +174,7 @@ class TransactionWorkbookWriter:
     def __enter__(self) -> Any:
         return self
 
-    def __exit__(self, exc_type, exc_val, exc_tb):
+    def __exit__(self, exc_type, exc_val, exc_tb) -> None:
         self._sheet.freeze_panes = self._sheet["a2"]
         self._add_sort_dropdown()
         self._add_summary()
@@ -192,7 +192,7 @@ class TransactionWorkbookWriter:
                 self._sheet.append(self._convert(transaction))
                 self._set_number_format(TransactionWorkbookWriter.Column.charge.position)
 
-    def _set_number_format(self, position: str):
+    def _set_number_format(self, position: str) -> None:
         self._sheet[f"{position}{self._sheet.max_row}"].number_format = numbers.FORMAT_NUMBER
 
     @staticmethod
@@ -208,7 +208,7 @@ class TransactionWorkbookWriter:
             transaction.transaction_sum,
         )
 
-    def _relevant(self, transaction: Transaction) -> True:
+    def _relevant(self, transaction: Transaction) -> bool:
         return (
                 self._filters and "month" in self._filters and transaction.charge_date.month == self._filters["month"]
                 and
@@ -253,11 +253,9 @@ class TransactionWorkbookWriter:
     def _add_category_chart(self, start_row: int, end_row: int, start_col: int, end_col: int) -> None:
         chart = PieChart()
         data = Reference(worksheet=self._sheet, min_row=start_row, max_row=end_row, min_col=start_col, max_col=end_col)
-
         chart.add_data(data, from_rows=False, titles_from_data=False)  # todo
         cats = Reference(self._sheet, min_col=1, min_row=start_row, max_col=1, max_row=end_row)
         chart.set_categories(cats)
-        # chart.dataLabels
         self._sheet.add_chart(chart, 'b80')  # todo
 
 
@@ -266,7 +264,7 @@ class TransactionsMerger:
     def __init__(self, reports: Collection[Transactions]) -> None:
         self._reports = reports
 
-    def merge(self, transactions_processor: Any) -> None:  # todo: Any
+    def merge(self, transactions_processor: Any) -> None:
         with transactions_processor as processor:
             for report in self._reports:
                 processor.process(report.transaction_generator())
