@@ -83,18 +83,13 @@ descriptions_by_category: Dict[Category, Set[str]] = {
     }
 }
 
-category_from_description: Dict[str, Category] = {}
-
 # todo: one-liner?
 # map(lambda cat, keywords: ((yield cat, keyword) for keyword in keywords), descriptions_by_category.items())
-for cat, keywords in descriptions_by_category.items():
-    for keyword in keywords:
-        category_from_description[keyword] = cat
-# category_from_description = {
-#     keyword: cat for cat, keyword in
-#     ((keyword, cat) for cat in descriptions_by_category.keys() for keyword in descriptions_by_category[cat]
-#      )
-# }
+category_from_description = {
+    keyword: cat for keyword, cat in
+    ((keyword, cat) for cat in descriptions_by_category.keys() for keyword in descriptions_by_category[cat]
+     )
+}
 
 
 @dataclass
