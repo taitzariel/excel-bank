@@ -89,7 +89,11 @@ category_from_description: Dict[str, Category] = {}
 for cat, keywords in descriptions_by_category.items():
     for keyword in keywords:
         category_from_description[keyword] = cat
-# category_from_description = {keyword: cat for cat, keywords in descriptions_by_category.items() }
+# category_from_description = {
+#     keyword: cat for cat, keyword in
+#     ((keyword, cat) for cat in descriptions_by_category.keys() for keyword in descriptions_by_category[cat]
+#      )
+# }
 
 
 @dataclass
@@ -226,12 +230,30 @@ class TransactionWorkbookWriter:
         cat_pos = TransactionWorkbookWriter.Column.category.position
         charge_range = f"{charge_pos}2:{charge_pos}{last_data_row}"
         category_range = f"{cat_pos}2:{cat_pos}{last_data_row}"
-        for category in Category:
-            self._sheet.append((
-                category.value,
-                f"=SUMIFS({charge_range}, {category_range}, \"{category.value}\")"
-            ))
+
+        def add_summary_row(description: str, formula: str) -> None:
+            self._sheet.append((description, formula))
             self._set_number_format(position='b')
+
+        def add_category(cat: Category) -> None:
+            add_summary_row(
+                description=cat.value,
+                formula=f"=SUMIFS({charge_range}, {category_range}, \"{cat.value}\")",
+            )
+
+        for category in Category:
+            if category is not Category.income:
+                add_category(category)
+        self._sheet.append(())
+        add_summary_row(
+            description="הוצאות",
+            formula=f"=SUMIFS({charge_range}, {charge_range}, \">0\")",
+        )
+        add_category(Category.income)
+        add_summary_row(
+            description="סך הוצעות",
+            formula=f"=SUM({charge_range})",
+        )
 
 
 class TransactionsMerger:
