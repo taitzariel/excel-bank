@@ -2,10 +2,11 @@ import datetime
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from enum import Enum
-from typing import Any, Collection, Iterator, Tuple, Dict, Set, Optional
+from typing import Any, Collection, Iterator, Tuple, Dict, Set
+
 from openpyxl import Workbook, load_workbook
-from openpyxl.styles import numbers
 from openpyxl.chart import PieChart, Reference
+from openpyxl.styles import numbers
 
 
 class Category(Enum):
@@ -114,16 +115,15 @@ class Transaction:
 
 class Transactions(ABC):
 
-    def __init__(self, filename) -> None:
-        self._workbook = load_workbook(filename=filename, read_only=True)
-        self._sheet = self._workbook.active  # todo: don't keep unnecessary fields
-        self._row_gen = self._sheet.rows
+    def __init__(self, filename: str) -> None:
+        workbook = load_workbook(filename=filename, read_only=True)
+        self._row_gen = workbook.active.rows
         while self.is_header_row(next(self._row_gen)):
             pass
 
     @abstractmethod
     def is_header_row(self, row) -> bool:
-        return True
+        """this method should return whether we have reached the row before the first data row"""
 
     def transaction_generator(self):
         for row in self._row_gen:
@@ -132,8 +132,8 @@ class Transactions(ABC):
             yield self._convert(row)
 
     @abstractmethod
-    def _convert(self, row) -> Optional[Transaction]:  # todo
-        return None
+    def _convert(self, row) -> Transaction:
+        """this method should convert a row to a Transaction"""
 
 
 class TransactionWorkbookWriter:
