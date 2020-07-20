@@ -5,6 +5,7 @@ from enum import Enum
 from typing import Any, Collection, Iterator, Tuple, Dict, Set, Optional
 from openpyxl import Workbook, load_workbook
 from openpyxl.styles import numbers
+from openpyxl.chart import PieChart, Reference
 
 
 class Category(Enum):
@@ -224,7 +225,8 @@ class TransactionWorkbookWriter:
 
     def _add_summary(self) -> None:
         last_data_row = self._sheet.max_row
-        for _ in range(3):
+        gap = 3
+        for _ in range(gap):
             self._sheet.append(())
         charge_pos = TransactionWorkbookWriter.Column.charge.position
         cat_pos = TransactionWorkbookWriter.Column.category.position
@@ -241,9 +243,14 @@ class TransactionWorkbookWriter:
                 formula=f"=SUMIFS({charge_range}, {category_range}, \"{cat.value}\")",
             )
 
+        add_summary_row(
+            description="category",
+            formula="amount",
+        )
         for category in Category:
             if category is not Category.income:
                 add_category(category)
+        self._add_category_chart(start_row=last_data_row + gap + 2, end_row=self._sheet.max_row, start_col=2, end_col=2)
         self._sheet.append(())
         add_summary_row(
             description="הוצאות",
@@ -254,6 +261,16 @@ class TransactionWorkbookWriter:
             description="סך הוצעות",
             formula=f"=SUM({charge_range})",
         )
+
+    def _add_category_chart(self, start_row: int, end_row: int, start_col: int, end_col: int) -> None:
+        chart = PieChart()
+        data = Reference(worksheet=self._sheet, min_row=start_row, max_row=end_row, min_col=start_col, max_col=end_col)
+
+        chart.add_data(data, from_rows=False, titles_from_data=False)  # todo
+        cats = Reference(self._sheet, min_col=1, min_row=start_row, max_col=1, max_row=end_row)
+        chart.set_categories(cats)
+        # chart.dataLabels
+        self._sheet.add_chart(chart, 'b80')  # todo
 
 
 class TransactionsMerger:
