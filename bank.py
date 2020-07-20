@@ -80,10 +80,12 @@ descriptions_by_category: Dict[Category, Set[str]] = {
         "יינות ביתן",
         "שופרסל",
         "רמי לוי",
-    }
+    },
 }
 
-category_from_description = {keyword: cat for cat, keywords in descriptions_by_category.items() for keyword in keywords}
+category_from_description: Dict[str, Category] = {
+    keyword: cat for cat, keywords in descriptions_by_category.items() for keyword in keywords
+}
 
 
 @dataclass
@@ -92,9 +94,15 @@ class Transaction:
     business: str
     charge_date: datetime.datetime
     transaction_date: datetime.datetime
+    details: str
+    card: str
+    notes: str
+    transaction_sum: Any
 
-    @property
-    def category(self) -> Category:  # todo: better to perform once only
+    def __post_init__(self):
+        self.category = self._compute_category()
+
+    def _compute_category(self) -> Category:
         for kw, category in category_from_description.items():
             if kw in self.business:
                 return category
@@ -102,11 +110,6 @@ class Transaction:
             return Category.income
         else:
             return Category.other
-
-    details: str
-    card: str
-    notes: str
-    transaction_sum: Any
 
 
 class Transactions(ABC):
