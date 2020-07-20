@@ -164,7 +164,7 @@ class TransactionWorkbookWriter:
     def __init__(self, outfile: str, filters: dict) -> None:
         self._wb = Workbook()
         self._sheet = self._wb.active
-        self._sheet.append(TransactionWorkbookWriter.Column.by_position())  # todo: ensure header row matches data rows
+        self._sheet.append(TransactionWorkbookWriter.Column.by_position())
         self._sheet.sheet_view.rightToLeft = True
         for column, width in TransactionWorkbookWriter.Column.width_per_column().items():
             self._sheet.column_dimensions[column].width = width
@@ -253,10 +253,10 @@ class TransactionWorkbookWriter:
     def _add_category_chart(self, start_row: int, end_row: int, start_col: int, end_col: int) -> None:
         chart = PieChart()
         data = Reference(worksheet=self._sheet, min_row=start_row, max_row=end_row, min_col=start_col, max_col=end_col)
-        chart.add_data(data, from_rows=False, titles_from_data=False)  # todo
+        chart.add_data(data, from_rows=False, titles_from_data=False)
         cats = Reference(self._sheet, min_col=1, min_row=start_row, max_col=1, max_row=end_row)
         chart.set_categories(cats)
-        self._sheet.add_chart(chart, 'b80')  # todo
+        self._sheet.add_chart(chart, f'c{start_row}')
 
 
 class TransactionsMerger:
