@@ -3,7 +3,7 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from enum import Enum
 from functools import partial
-from typing import Any, Collection, Iterator, Tuple, Dict, Set, Callable
+from typing import Any, Iterator, Tuple, Dict, Set, Callable, Iterable, TypeVar
 
 from openpyxl import Workbook, load_workbook
 from openpyxl.chart import PieChart, Reference
@@ -268,15 +268,27 @@ class TransactionWorkbookWriter:
         self._sheet.add_chart(chart, f'c{start_row}')
 
 
+# todo: move to utils
+T = TypeVar('T')
+
+
+def series_combine_producers(producers: Iterable[T]) -> Iterable[T]:
+    for prod in producers:
+        for item in prod:
+            yield item
+
+
 class TransactionsMerger:
 
-    def __init__(self, reports: Collection[TransactionProducer]) -> None:
+    def __init__(self, reports: Iterable[TransactionProducer]) -> None:
         self._reports = reports
+        # self._combined_report = series_combine_producers(reports)
 
     def merge(self, transactions_processor: Any) -> None:
         with transactions_processor as processor:
             for report in self._reports:
                 processor.accept(report.transaction_generator())
+                # processor.accept(self._combined_report.transaction_generator())
 
 
 class BankTransactions(TransactionProducer):
