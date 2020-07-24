@@ -117,10 +117,9 @@ class Transaction:
         self.category = self._compute_category()
 
     def _compute_category(self) -> Category:
+        if self.amount < 0:
+            return Category.income
         for kw, category in category_by_description.items():
             if kw in self.business:
                 return category
-        if self.amount < 0:
-            return Category.income
-        else:
-            return Category.other
+        return Category.other
