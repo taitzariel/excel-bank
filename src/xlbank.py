@@ -1,3 +1,5 @@
+#!/usr/bin/python3
+
 import itertools
 from txconsumer import TransactionWorkbookWriter
 from txiterator import BankTransactions, CreditTransactions
@@ -25,3 +27,4 @@ def parse_args():
 
 if __name__ == "__main__":
     main()
+
