@@ -4,7 +4,7 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from enum import Enum
 from functools import partial
-from typing import Any, Iterator, Tuple, Dict, Set, Callable, Iterable
+from typing import Any, Iterator, Tuple, Dict, Set, Callable
 
 from openpyxl import Workbook, load_workbook
 from openpyxl.chart import PieChart, Reference
@@ -269,16 +269,6 @@ class TransactionWorkbookWriter:
         self._sheet.add_chart(chart, f'c{start_row}')
 
 
-class TransactionsMerger:
-
-    def __init__(self, *reports: Iterable[TransactionIteratable]) -> None:
-        self._reports = reports
-
-    def merge(self, transactions_processor: Any) -> None:
-        with transactions_processor as processor:
-            processor.accept(itertools.chain(*self._reports))
-
-
 class BankTransactions(TransactionIteratable):
     def _is_header_row(self, row) -> bool:
         return row[0].value != "תאריך"
@@ -318,8 +308,8 @@ def main() -> None:
     creditfile = CreditTransactions("/tmp/excel/ashrai.xlsx")
     outfile = "/tmp/excel/merged.xlsx"
     filters = {"month": 6}
-    merger = TransactionsMerger(bankfile, creditfile)
-    merger.merge(TransactionWorkbookWriter(outfile=outfile, filters=filters))
+    with TransactionWorkbookWriter(outfile=outfile, filters=filters) as processor:
+        processor.accept(itertools.chain(bankfile, creditfile))
 
 
 if __name__ == "__main__":
