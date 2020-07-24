@@ -35,6 +35,7 @@ descriptions_by_category: Dict[Category, Set[str]] = {
         "019",
         "פלאפון",
         "בזק",
+        "אמישרגז",
     },
     Category.savings: {
         "חסכון",
@@ -70,6 +71,7 @@ descriptions_by_category: Dict[Category, Set[str]] = {
         "פנגו",
         "פז",
         "כלל חובה",
+        "כלל אלמנטרי",
     },
     Category.food: {
         "מכולת",

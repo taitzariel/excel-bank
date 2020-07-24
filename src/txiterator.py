@@ -50,13 +50,24 @@ class CreditTransactions(TransactionIteratable):
         return row[0].value != "כרטיס"
 
     def _convert(self, row) -> Transaction:
+        business = row[1].value
+        transaction_date = row[2].value
+        charge_date = row[7].value
+        if not charge_date:
+            print(f"warning: charge data empty for {business}, using transaction date instead")
+            charge_date = transaction_date
+        amount = row[8].value
+        transaction_sum = row[3].value
+        if not amount:
+            print(f"warning: charge amount empty for {business}, using transaction amount instead")
+            amount = transaction_sum
         return Transaction(
-            amount=row[8].value,
-            business=row[1].value,
-            charge_date=datetime.datetime.strptime(row[7].value, "%d/%m/%Y"),
-            transaction_date=datetime.datetime.strptime(row[2].value, "%d/%m/%Y"),
+            amount=amount,
+            business=business,
+            charge_date=datetime.datetime.strptime(charge_date, "%d/%m/%Y"),
+            transaction_date=datetime.datetime.strptime(transaction_date, "%d/%m/%Y"),
             details=row[6].value,
             card=row[0].value,
             notes="",
-            transaction_sum=row[3].value,
+            transaction_sum=transaction_sum,
         )
