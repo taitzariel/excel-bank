@@ -10,7 +10,7 @@ def main() -> None:
     args = parse_args()
     bankfile = BankTransactions(args.bank)
     creditfile = CreditTransactions(args.credit)
-    txfilter = TransactionWorkbookWriter.Filter(month=args.month)
+    txfilter = TransactionWorkbookWriter.Filter(month=args.month, excludebusiness=("כרטיס ויזה",))
     with TransactionWorkbookWriter(outfile=args.out, txfilter=txfilter) as processor:
         processor.accept(itertools.chain(bankfile, creditfile))
 

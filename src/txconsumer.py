@@ -37,6 +37,7 @@ class TransactionWorkbookWriter:
     @dataclass
     class Filter:
         month: Optional[int] = None
+        excludebusiness: Tuple[str] = ()
 
     def __init__(self, outfile: str, txfilter: Filter) -> None:
         self._wb = Workbook()
@@ -86,11 +87,10 @@ class TransactionWorkbookWriter:
         )
 
     def _relevant(self, transaction: Transaction) -> bool:
-        return (
-                transaction.charge_date.month == self._filter.month
-                and
-                "כרטיס ויזה" not in transaction.business
-        )
+        for business in self._filter.excludebusiness:
+            if business in transaction.business:
+                return False
+        return transaction.charge_date.month == self._filter.month
 
     def _add_summary_row(self, description: str, formula: str) -> None:
         self._sheet.append((description, formula))
