@@ -8,8 +8,8 @@ def main() -> None:
     args = parse_args()
     bankfile = BankTransactions(args.bank)
     creditfile = CreditTransactions(args.credit)
-    filters = {"month": args.month}
-    with TransactionWorkbookWriter(outfile=args.out, filters=filters) as processor:
+    txfilter = TransactionWorkbookWriter.Filter(month=args.month)
+    with TransactionWorkbookWriter(outfile=args.out, txfilter=txfilter) as processor:
         processor.accept(itertools.chain(bankfile, creditfile))
 
 

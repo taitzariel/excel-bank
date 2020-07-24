@@ -1,6 +1,7 @@
+from dataclasses import dataclass
 from enum import Enum
 from functools import partial
-from typing import Any, Iterator, Tuple, Callable
+from typing import Any, Iterator, Tuple, Callable, Optional
 
 from openpyxl import Workbook
 from openpyxl.chart import PieChart, Reference
@@ -33,7 +34,11 @@ class TransactionWorkbookWriter:
         def width_per_column():
             return {col.position: col.width for col in TransactionWorkbookWriter.Column}
 
-    def __init__(self, outfile: str, filters: dict) -> None:
+    @dataclass
+    class Filter:
+        month: Optional[int] = None
+
+    def __init__(self, outfile: str, txfilter: Filter) -> None:
         self._wb = Workbook()
         self._sheet = self._wb.active
         self._sheet.append(TransactionWorkbookWriter.Column.by_position())
@@ -41,7 +46,7 @@ class TransactionWorkbookWriter:
         for column, width in TransactionWorkbookWriter.Column.width_per_column().items():
             self._sheet.column_dimensions[column].width = width
         self._outfile = outfile
-        self._filters = filters
+        self._filter = txfilter if txfilter else TransactionWorkbookWriter.Filter()
 
     def __enter__(self) -> Any:
         return self
@@ -82,7 +87,7 @@ class TransactionWorkbookWriter:
 
     def _relevant(self, transaction: Transaction) -> bool:
         return (
-                self._filters and "month" in self._filters and transaction.charge_date.month == self._filters["month"]
+                transaction.charge_date.month == self._filter.month
                 and
                 "כרטיס ויזה" not in transaction.business
         )
