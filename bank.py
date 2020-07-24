@@ -1,9 +1,10 @@
 import datetime
+import itertools
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from enum import Enum
 from functools import partial
-from typing import Any, Iterator, Tuple, Dict, Set, Callable, Iterable, TypeVar
+from typing import Any, Iterator, Tuple, Dict, Set, Callable, Iterable
 
 from openpyxl import Workbook, load_workbook
 from openpyxl.chart import PieChart, Reference
@@ -114,7 +115,7 @@ class Transaction:
             return Category.other
 
 
-class TransactionProducer(ABC):
+class TransactionIteratable(ABC):
 
     def __init__(self, filename: str) -> None:
         workbook = load_workbook(filename=filename, read_only=True)
@@ -126,7 +127,7 @@ class TransactionProducer(ABC):
     def _is_header_row(self, row) -> bool:
         """this method should return whether we have reached the row before the first data row"""
 
-    def transaction_generator(self) -> Iterator[Transaction]:
+    def __iter__(self) -> Iterator[Transaction]:
         for row in self._row_gen:
             if not row[0].value:
                 return
@@ -268,30 +269,17 @@ class TransactionWorkbookWriter:
         self._sheet.add_chart(chart, f'c{start_row}')
 
 
-# todo: move to utils
-T = TypeVar('T')
-
-
-def series_combine_producers(producers: Iterable[T]) -> Iterable[T]:
-    for prod in producers:
-        for item in prod:
-            yield item
-
-
 class TransactionsMerger:
 
-    def __init__(self, reports: Iterable[TransactionProducer]) -> None:
+    def __init__(self, *reports: Iterable[TransactionIteratable]) -> None:
         self._reports = reports
-        # self._combined_report = series_combine_producers(reports)
 
     def merge(self, transactions_processor: Any) -> None:
         with transactions_processor as processor:
-            for report in self._reports:
-                processor.accept(report.transaction_generator())
-                # processor.accept(self._combined_report.transaction_generator())
+            processor.accept(itertools.chain(*self._reports))
 
 
-class BankTransactions(TransactionProducer):
+class BankTransactions(TransactionIteratable):
     def _is_header_row(self, row) -> bool:
         return row[0].value != "תאריך"
 
@@ -308,7 +296,7 @@ class BankTransactions(TransactionProducer):
         )
 
 
-class CreditTransactions(TransactionProducer):
+class CreditTransactions(TransactionIteratable):
     def _is_header_row(self, row) -> bool:
         return row[0].value != "כרטיס"
 
@@ -330,7 +318,7 @@ def main() -> None:
     creditfile = CreditTransactions("/tmp/excel/ashrai.xlsx")
     outfile = "/tmp/excel/merged.xlsx"
     filters = {"month": 6}
-    merger = TransactionsMerger(reports=[bankfile, creditfile])
+    merger = TransactionsMerger(bankfile, creditfile)
     merger.merge(TransactionWorkbookWriter(outfile=outfile, filters=filters))
 
 
