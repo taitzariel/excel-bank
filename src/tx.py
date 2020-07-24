@@ -22,6 +22,10 @@ class Category(Enum):
 
 
 descriptions_by_category: Dict[Category, Set[str]] = {
+    Category.transport: {
+        "WIND MOBILITY",
+        "LIM*RIDE",
+    },
     Category.mortgage: {
         "משכנתא",
     },
@@ -35,6 +39,7 @@ descriptions_by_category: Dict[Category, Set[str]] = {
         "019",
         "פלאפון",
         "בזק",
+        "אלקטרה מוצרי צריכה",
         "אמישרגז",
     },
     Category.savings: {
@@ -42,6 +47,7 @@ descriptions_by_category: Dict[Category, Set[str]] = {
     },
     Category.donation: {
         "פעמונים",
+        "חיים ביד",
         "מוסדות חב\"ד",
         "מכון מאיר",
         "עטרת",
@@ -60,6 +66,7 @@ descriptions_by_category: Dict[Category, Set[str]] = {
     },
     Category.education: {
         "אמונה",
+        "חינוך",
     },
     Category.atm: {
         "כספומט"
@@ -72,12 +79,21 @@ descriptions_by_category: Dict[Category, Set[str]] = {
         "פז",
         "כלל חובה",
         "כלל אלמנטרי",
+        "רישיונות רכב",
+        "חניוני",
+        "רכב דוד",
     },
     Category.food: {
         "מכולת",
+        "יוחננוף",
+        "קפה עלית",
         "יינות ביתן",
+        "חצות וחצי",
+        "מחסני להב",
         "שופרסל",
         "רמי לוי",
+        "מינימרקט",
+        "מוצרי מזון",
     },
 }
 
