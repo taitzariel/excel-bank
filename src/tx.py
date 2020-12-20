@@ -41,6 +41,7 @@ descriptions_by_category: Dict[Category, Set[str]] = {
         "בזק",
         "אלקטרה מוצרי צריכה",
         "אמישרגז",
+        "מי אביבים"
     },
     Category.savings: {
         "חסכון",
@@ -56,6 +57,8 @@ descriptions_by_category: Dict[Category, Set[str]] = {
         "גרעין יפו",
         "בית דוד בית שמש",
         "המרכז העולמי לחסד",
+        "אסתר המלכה",
+        "יד שרה",
     },
     Category.insurance: {
         "מכבי",
