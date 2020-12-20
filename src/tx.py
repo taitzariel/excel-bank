@@ -47,7 +47,7 @@ descriptions_by_category: Dict[Category, Set[str]] = {
         "חסכון",
     },
     Category.donation: {
-        "פעמונים",
+        "פעמוני",
         "חיים ביד",
         "מוסדות חב\"ד",
         "מכון מאיר",
@@ -59,6 +59,7 @@ descriptions_by_category: Dict[Category, Set[str]] = {
         "המרכז העולמי לחסד",
         "אסתר המלכה",
         "יד שרה",
+        "עין-דרור",
     },
     Category.insurance: {
         "מכבי",
@@ -76,6 +77,7 @@ descriptions_by_category: Dict[Category, Set[str]] = {
     },
     Category.mentoring: {
         "שר שלום",
+        "שפר",
     },
     Category.fuel: {
         "פנגו",
@@ -97,6 +99,7 @@ descriptions_by_category: Dict[Category, Set[str]] = {
         "רמי לוי",
         "מינימרקט",
         "מוצרי מזון",
+        "סיבוס",
     },
 }
 
