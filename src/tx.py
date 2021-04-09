@@ -59,6 +59,7 @@ descriptions_by_category: Dict[Category, Set[str]] = {
         "המרכז העולמי לחסד",
         "אסתר המלכה",
         "יד שרה",
+        "ויצמן שולה",
         "עין-דרור",
     },
     Category.insurance: {
@@ -86,6 +87,7 @@ descriptions_by_category: Dict[Category, Set[str]] = {
         "כלל אלמנטרי",
         "רישיונות רכב",
         "חניוני",
+        "משרד התחבורה",
         "רכב דוד",
     },
     Category.food: {
@@ -94,6 +96,7 @@ descriptions_by_category: Dict[Category, Set[str]] = {
         "קפה עלית",
         "יינות ביתן",
         "חצות וחצי",
+        "מגה בעיר",
         "מחסני להב",
         "שופרסל",
         "רמי לוי",
