@@ -82,6 +82,7 @@ descriptions_by_category: Dict[Category, Set[str]] = {
     },
     Category.fuel: {
         "פנגו",
+        "סונול",
         "פז",
         "כלל חובה",
         "כלל אלמנטרי",
