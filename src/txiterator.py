@@ -57,10 +57,10 @@ class CreditTransactions(TransactionIteratable):
             print(f"warning: charge data empty for {business}, using transaction date instead")
             charge_date = transaction_date
         amount = row[8].value
+        assert isinstance(amount, (float, int)), f"non-numeral value found for charge sum: {amount}"
         transaction_sum = row[3].value
-        if not amount:
-            print(f"warning: charge amount empty for {business}, using transaction amount instead")
-            amount = transaction_sum
+        if amount == 0:
+            print(f"warning: charge amount empty for {business}")
         return Transaction(
             amount=amount,
             business=business,
