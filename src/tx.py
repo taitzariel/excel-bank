@@ -72,6 +72,7 @@ descriptions_by_category: Dict[Category, Set[str]] = {
     },
     Category.education: {
         "אמונה",
+        'ישיבת בנ"ע',
         "חינוך",
     },
     Category.atm: {
@@ -83,6 +84,7 @@ descriptions_by_category: Dict[Category, Set[str]] = {
     },
     Category.fuel: {
         "פנגו",
+        "דלק",
         "סונול",
         "פז",
         "כלל חובה",
@@ -95,6 +97,7 @@ descriptions_by_category: Dict[Category, Set[str]] = {
     Category.food: {
         "מכולת",
         "יוחננוף",
+        "סופר דוש",
         "קפה עלית",
         "יינות ביתן",
         "חצות וחצי",
