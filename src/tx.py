@@ -7,6 +7,7 @@ from typing import Any, Dict, Set
 class Category(Enum):
     mortgage = "משכנתא"
     food = "אוכל"
+    shvut = "שבות"
     education = "חינוך"
     running_expenses = "שוטף"
     mentoring = "הדרכה"
@@ -93,6 +94,11 @@ descriptions_by_category: Dict[Category, Set[str]] = {
         "חניוני",
         "משרד התחבורה",
         "רכב דוד",
+    },
+    Category.shvut: {
+        "מאיה אלגריסי",
+        "צאלה קרני",
+        "קרני צאלה",
     },
     Category.food: {
         "מכולת",
