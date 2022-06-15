@@ -25,6 +25,7 @@ class Category(Enum):
 descriptions_by_category: Dict[Category, Set[str]] = {
     Category.transport: {
         "WIND MOBILITY",
+        "רב קו",
         "LIM*RIDE",
     },
     Category.mortgage: {
@@ -36,6 +37,7 @@ descriptions_by_category: Dict[Category, Set[str]] = {
     Category.running_expenses: {
         "ועד",
         "אינטרנט",
+        "סלקום",
         "חברת החשמל",
         "019",
         "פלאפון",
@@ -85,6 +87,7 @@ descriptions_by_category: Dict[Category, Set[str]] = {
     },
     Category.fuel: {
         "פנגו",
+        "דור אלון",
         "דלק",
         "סונול",
         "פז",
@@ -105,6 +108,7 @@ descriptions_by_category: Dict[Category, Set[str]] = {
         "יוחננוף",
         "סופר דוש",
         "קפה עלית",
+        "מגה קמעונאות",
         "יינות ביתן",
         "חצות וחצי",
         "מגה בעיר",
