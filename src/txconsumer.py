@@ -1,3 +1,4 @@
+import datetime
 from dataclasses import dataclass
 from enum import Enum
 from functools import partial
@@ -36,7 +37,8 @@ class TransactionWorkbookWriter:
 
     @dataclass
     class Filter:
-        month: Optional[int] = None
+        begin: Optional[datetime.datetime] = None
+        end: Optional[datetime.datetime] = None
         excludebusiness: Tuple[str] = ()
 
     def __init__(self, outfile: str, txfilter: Filter) -> None:
@@ -90,7 +92,11 @@ class TransactionWorkbookWriter:
         for business in self._filter.excludebusiness:
             if business in transaction.business:
                 return False
-        return transaction.charge_date.month == self._filter.month
+        if self._filter.begin and self._filter.begin > transaction.charge_date:
+            return False
+        if self._filter.end and self._filter.end < transaction.charge_date:
+            return False
+        return True
 
     def _add_summary_row(self, description: str, formula: str) -> None:
         self._sheet.append((description, formula))
