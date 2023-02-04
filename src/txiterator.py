@@ -34,6 +34,7 @@ class BankTransactions(TransactionIteratable):
 
     def _convert(self, row) -> Transaction:
         return Transaction(
+            tid=str(row[5].value),
             amount=-row[3].value,
             business=row[2].value,
             transaction_date=row[0].value,

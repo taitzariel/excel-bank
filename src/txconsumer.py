@@ -50,6 +50,7 @@ class TransactionWorkbookWriter:
             self._sheet.column_dimensions[column].width = width
         self._outfile = outfile
         self._filter = txfilter if txfilter else TransactionWorkbookWriter.Filter()
+        self._processed_transactions = set()
 
     def __enter__(self) -> Any:
         return self
@@ -68,12 +69,20 @@ class TransactionWorkbookWriter:
 
     def accept(self, transactions: Iterator[Transaction]) -> None:
         for transaction in transactions:
-            if self._relevant(transaction):
+            if not self._already_processed(transaction) and self._relevant(transaction):
+                self._record_transaction(transaction)
                 self._sheet.append(self._convert(transaction))
                 self._set_number_format(TransactionWorkbookWriter.Column.charge.position)
 
     def _set_number_format(self, position: str) -> None:
         self._sheet[f"{position}{self._sheet.max_row}"].number_format = numbers.FORMAT_NUMBER
+
+    def _already_processed(self, transaction: Transaction) -> bool:
+        return transaction.tid and transaction.tid in self._processed_transactions
+
+    def _record_transaction(self, transaction: Transaction) -> None:
+        if transaction.tid:
+            self._processed_transactions.add(transaction.tid)
 
     @staticmethod
     def _convert(transaction: Transaction) -> Tuple:

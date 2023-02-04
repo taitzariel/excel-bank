@@ -1,7 +1,7 @@
 import datetime
 from dataclasses import dataclass
 from enum import Enum
-from typing import Any, Dict, Set
+from typing import Any, Dict, Set, Optional
 
 
 class Category(Enum):
@@ -130,6 +130,7 @@ category_by_description: Dict[str, Category] = {
 
 @dataclass
 class Transaction:
+    tid: Optional[str]
     amount: Any
     business: str
     charge_date: datetime.datetime
