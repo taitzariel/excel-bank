@@ -46,7 +46,7 @@ def _datetime_from_str(val: str) -> datetime:
     except KeyError:
         raise error
     try:
-        year = int(val[3:])
+        year = int(val[3:]) + 2000
     except ValueError:
         raise error
     return datetime(year=year, month=month.value, day=1)

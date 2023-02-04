@@ -94,7 +94,7 @@ class TransactionWorkbookWriter:
                 return False
         if self._filter.begin and self._filter.begin > transaction.charge_date:
             return False
-        if self._filter.end and self._filter.end < transaction.charge_date:
+        if self._filter.end and self._filter.end <= transaction.charge_date:
             return False
         return True
 
