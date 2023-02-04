@@ -11,7 +11,7 @@ import argparse
 
 def main() -> None:
     args = parse_args()
-    bankfile = BankTransactions(args.bank)
+    bankfiles = (BankTransactions(bank) for bank in args.bank)
     creditfiles = (CreditTransactions(credit) for credit in args.credit)
     begin = _datetime_from_str(args.begin)
     print(f"beginning {begin}")
@@ -19,7 +19,7 @@ def main() -> None:
     print(f"ending {end}")
     txfilter = TransactionWorkbookWriter.Filter(begin=begin, end=end, excludebusiness=("כרטיס ויזה",))
     with TransactionWorkbookWriter(outfile=args.out, txfilter=txfilter) as processor:
-        processor.accept(itertools.chain(bankfile, *creditfiles))
+        processor.accept(itertools.chain(*bankfiles, *creditfiles))
 
 
 class _Month(Enum):
@@ -64,8 +64,12 @@ def parse_args():
         required=False,
         help='Ending month (inclusive) for which to produce summary e.g. apr19, defaults to FROM month',
     )
-    parser.add_argument('--bank', type=str, required=True, help='Excel file containing current account transactions')
-    parser.add_argument('credit', type=str, help='Excel file(s) containing credit card transactions', nargs='+')
+    parser.add_argument(
+        '--bank', type=str, required=True, help='Excel file containing current account transactions', nargs='+'
+    )
+    parser.add_argument(
+        '--credit', type=str, required=True, help='Excel file(s) containing credit card transactions', nargs='+'
+    )
     args = parser.parse_args()
     return args
 

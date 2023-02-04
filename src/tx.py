@@ -130,7 +130,6 @@ category_by_description: Dict[str, Category] = {
 
 @dataclass
 class Transaction:
-    tid: Optional[str]
     amount: Any
     business: str
     charge_date: datetime.datetime
@@ -139,6 +138,7 @@ class Transaction:
     card: str
     notes: str
     transaction_sum: Any
+    tid: Optional[str] = None
 
     def __post_init__(self) -> None:
         self.category = self._compute_category()
