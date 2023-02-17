@@ -10,8 +10,11 @@ class TransactionIteratable(ABC):
     def __init__(self, filename: str) -> None:
         workbook = load_workbook(filename=filename, read_only=True)
         self._row_gen = workbook.active.rows
-        while self._is_header_row(next(self._row_gen)):
-            pass
+        try:
+            while self._is_header_row(next(self._row_gen)):
+                pass
+        except StopIteration:
+            raise Exception(f"failed to find header row in {filename}")
 
     @abstractmethod
     def _is_header_row(self, row) -> bool:
