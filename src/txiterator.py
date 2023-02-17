@@ -1,8 +1,17 @@
 import datetime
 from abc import ABC, abstractmethod
-from typing import Iterator
+from typing import Iterator, Optional
 from openpyxl import load_workbook
 from tx import Transaction
+
+
+class FormatError(Exception):
+    def __init__(self, message: str, filename: Optional[str] = None, row: Optional[int] = None) -> None:
+        if filename:
+            message += f", filename {filename}"
+        if row:
+            message += f", row {row}"
+        super().__init__(message)
 
 
 class TransactionIteratable(ABC):
@@ -14,7 +23,7 @@ class TransactionIteratable(ABC):
             while self._is_header_row(next(self._row_gen)):
                 pass
         except StopIteration:
-            raise Exception(f"failed to find header row in {filename}")
+            raise FormatError(f"failed to find header row", filename=filename)
 
     @abstractmethod
     def _is_header_row(self, row) -> bool:
@@ -61,7 +70,8 @@ class CreditTransactions(TransactionIteratable):
             print(f"warning: charge data empty for {business}, using transaction date instead")
             charge_date = transaction_date
         amount = row[8].value
-        assert isinstance(amount, (float, int)), f"non-numeral value found for charge sum: {amount}"
+        if not isinstance(amount, (float, int)):
+            raise FormatError(f"non-numeral value found for charge sum: {amount}")
         transaction_sum = row[3].value
         if amount == 0:
             print(f"warning: charge amount empty for {business}")
