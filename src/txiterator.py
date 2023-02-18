@@ -24,6 +24,7 @@ class TransactionIteratable(ABC):
                 pass
         except StopIteration:
             raise FormatError(f"failed to find header row", filename=filename)
+        self._filename = filename
 
     @abstractmethod
     def _is_header_row(self, row) -> bool:
@@ -71,7 +72,7 @@ class CreditTransactions(TransactionIteratable):
             charge_date = transaction_date
         amount = row[8].value
         if not isinstance(amount, (float, int)):
-            raise FormatError(f"non-numeral value found for charge sum: {amount}")
+            raise FormatError(f"non-numeral value found for charge sum: {amount}", filename=self._filename)
         transaction_sum = row[3].value
         if amount == 0:
             print(f"warning: charge amount empty for {business}")
