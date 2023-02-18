@@ -68,14 +68,17 @@ class CreditTransactions(TransactionIteratable):
         transaction_date = row[2].value
         charge_date = row[7].value
         if not charge_date:
-            print(f"warning: charge data empty for {business}, using transaction date instead")
+            print(
+                f"warning: charge date empty, using transaction date instead, {self._str_from_row(row)}"
+            )
             charge_date = transaction_date
         amount = row[8].value
         if not isinstance(amount, (float, int)):
-            raise FormatError(f"non-numeral value found for charge sum: {amount}", filename=self._filename)
+            print(f"non-numeral value found for charge sum: {amount}, assuming 0, {self._str_from_row(row)}")
+            amount = 0
+        elif amount == 0:
+            print(f"warning: charge amount empty, {self._str_from_row(row)}")
         transaction_sum = row[3].value
-        if amount == 0:
-            print(f"warning: charge amount empty for {business}")
         return Transaction(
             amount=amount,
             business=business,
@@ -86,3 +89,6 @@ class CreditTransactions(TransactionIteratable):
             notes="",
             transaction_sum=transaction_sum,
         )
+
+    def _str_from_row(self, row) -> str:
+        return str({"filename": self._filename, "business": row[1].value, "transaction_sum": row[3].value})
