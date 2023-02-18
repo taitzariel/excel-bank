@@ -34,7 +34,10 @@ class TransactionIteratable(ABC):
         for row in self._row_gen:
             if not row[0].value:
                 return
-            yield self._convert(row)
+            try:
+                yield self._convert(row)
+            except FormatError as e:
+                print(f"skipping line {row[0].row} of file {self._filename} due to exception: {e}")
 
     @abstractmethod
     def _convert(self, row) -> Transaction:
