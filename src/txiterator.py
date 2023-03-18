@@ -20,7 +20,7 @@ class TransactionIteratable(ABC):
         workbook = load_workbook(filename=filename, read_only=True)
         self._row_gen = workbook.active.rows
         try:
-            while self._is_header_row(next(self._row_gen)):
+            while not self._is_header_row(next(self._row_gen)):
                 pass
         except StopIteration:
             raise FormatError(f"failed to find header row", filename=filename)
@@ -30,9 +30,13 @@ class TransactionIteratable(ABC):
     def _is_header_row(self, row) -> bool:
         """this method should return whether we have reached the row before the first data row"""
 
+    @abstractmethod
+    def _is_data_row(self, row) -> bool:
+        """this method should return whether this row is a data row"""
+
     def __iter__(self) -> Iterator[Transaction]:
         for row in self._row_gen:
-            if not row[0].value:
+            if not self._is_data_row(row):
                 return
             try:
                 yield self._convert(row)
@@ -46,7 +50,10 @@ class TransactionIteratable(ABC):
 
 class BankTransactions(TransactionIteratable):
     def _is_header_row(self, row) -> bool:
-        return row[0].value != "תאריך"
+        return row[0].value == "תאריך"
+
+    def _is_data_row(self, row) -> bool:
+        return isinstance(row[3].value, (int, float))
 
     def _convert(self, row) -> Transaction:
         return Transaction(
@@ -64,7 +71,10 @@ class BankTransactions(TransactionIteratable):
 
 class CreditTransactions(TransactionIteratable):
     def _is_header_row(self, row) -> bool:
-        return row[0].value != "כרטיס"
+        return row[0].value == "כרטיס"
+
+    def _is_data_row(self, row) -> bool:
+        return isinstance(row[3].value, (int, float))
 
     def _convert(self, row) -> Transaction:
         business = row[1].value
