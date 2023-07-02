@@ -37,6 +37,7 @@ class TransactionIteratable(ABC):
     def __iter__(self) -> Iterator[Transaction]:
         for row in self._row_gen:
             if not self._is_data_row(row):
+                print(f"stopping iteration at line {row[0].row} of file {self._filename} because is not data row")
                 return
             try:
                 yield self._convert(row)
@@ -53,7 +54,7 @@ class BankTransactions(TransactionIteratable):
         return row[0].value == "תאריך"
 
     def _is_data_row(self, row) -> bool:
-        return isinstance(row[3].value, (int, float))
+        return isinstance(row[1].value, datetime.datetime)  # each row should have a posting date
 
     def _convert(self, row) -> Transaction:
         return Transaction(
@@ -74,7 +75,7 @@ class CreditTransactions(TransactionIteratable):
         return row[0].value == "כרטיס"
 
     def _is_data_row(self, row) -> bool:
-        return isinstance(row[3].value, (int, float))
+        return isinstance(row[2].value, str)  # each row should have a transaction date
 
     def _convert(self, row) -> Transaction:
         business = row[1].value
