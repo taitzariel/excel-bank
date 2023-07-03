@@ -70,6 +70,7 @@ descriptions_by_category: Dict[Category, Set[str]] = {
         "מכבי",
         "שירותי ברי",
         "ביטוח",
+        "מבטחים",
         "פניקס",
         "מגדל",
     },
