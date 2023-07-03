@@ -37,7 +37,8 @@ class TransactionIteratable(ABC):
     def __iter__(self) -> Iterator[Transaction]:
         for row in self._row_gen:
             if not self._is_data_row(row):
-                print(f"stopping iteration at line {row[0].row} of file {self._filename} because is not data row")
+                non_data_row = row[0].row if hasattr(row[0], "row") else row[0]
+                print(f"stopping iteration at row {non_data_row} of file {self._filename} because is not data row")
                 return
             try:
                 yield self._convert(row)
