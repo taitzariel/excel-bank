@@ -33,6 +33,7 @@ descriptions_by_category: Dict[Category, Set[str]] = {
     },
     Category.tax: {
         "מסים",
+        "מיסים",
     },
     Category.running_expenses: {
         "ועד",
