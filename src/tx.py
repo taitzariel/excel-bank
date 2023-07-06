@@ -37,7 +37,6 @@ descriptions_by_category: Dict[Category, Set[str]] = {
     },
     Category.running_expenses: {
         "ועד",
-        "אינטרנט",
         "סלקום",
         "חברת החשמל",
         "019",
@@ -56,6 +55,7 @@ descriptions_by_category: Dict[Category, Set[str]] = {
         "מוסדות חב\"ד",
         "מכון מאיר",
         "עטרת",
+        "חסדי עולם",
         "מה יפו פעמי",
         "מאירים ביפו",
         "התורה והארץ",
@@ -119,6 +119,7 @@ descriptions_by_category: Dict[Category, Set[str]] = {
         "מגה בעיר",
         "מחסני להב",
         "שופרסל",
+        "פיצה",
         "אושר עד",
         "רמי לוי",
         "מינימרקט",
