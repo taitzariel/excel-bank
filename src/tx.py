@@ -106,6 +106,7 @@ descriptions_by_category: Dict[Category, Set[str]] = {
     Category.shvut: {
         "מאיה אלגריסי",
         "צאלה קרני",
+        "דורית אילני",
         "קרני צאלה",
     },
     Category.food: {
@@ -115,6 +116,7 @@ descriptions_by_category: Dict[Category, Set[str]] = {
         "קפה עלית",
         "מגה קמעונאות",
         "יינות ביתן",
+        "ויקטורי",
         "חצות וחצי",
         "מגה בעיר",
         "מחסני להב",
