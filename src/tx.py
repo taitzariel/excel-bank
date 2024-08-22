@@ -80,6 +80,7 @@ descriptions_by_category: Dict[Category, Set[str]] = {
     Category.education: {
         "אמונה",
         "אורות התורה",
+        "ישיבת בני",
         'ישיבת בנ"ע',
         'עיריית בת ים',
         "חינוך",
