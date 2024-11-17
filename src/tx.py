@@ -80,6 +80,7 @@ descriptions_by_category: Dict[Category, Set[str]] = {
     Category.education: {
         "אמונה",
         "אורות התורה",
+        "אלי בעזרי",
         "ישיבת בני",
         'ישיבת בנ"ע',
         'עיריית בת ים',
@@ -111,6 +112,7 @@ descriptions_by_category: Dict[Category, Set[str]] = {
         "מאיה אלגריסי",
         "צאלה קרני",
         "דורית אילני",
+        "שלום בן דור",
         "קרני צאלה",
     },
     Category.food: {
