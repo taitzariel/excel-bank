@@ -75,6 +75,7 @@ descriptions_by_category: Dict[Category, Set[str]] = {
         "כלל ב.בריאות",
         "מבטחים",
         "פניקס",
+        "הראל",
         "מגדל",
     },
     Category.education: {
