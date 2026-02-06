@@ -96,6 +96,7 @@ descriptions_by_category: Dict[Category, Set[str]] = {
     },
     Category.mentoring: {
         "שר שלום",
+        "טלי גוטפריד",
         "שפר",
     },
     Category.fuel: {
