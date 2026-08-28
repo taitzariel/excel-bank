@@ -102,6 +102,7 @@ descriptions_by_category: Dict[Category, Set[str]] = {
     },
     Category.fuel: {
         "פנגו",
+        "מוסך השושנים",
         "דור אלון",
         "דלק",
         "סונול",
